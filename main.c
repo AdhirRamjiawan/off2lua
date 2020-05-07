@@ -56,12 +56,12 @@ void show_hlp()
 
 void load_off(char *fpath, OFF *off)
 {
-    printf("Loading .off model from %s\n", fpath);
+    printf("Loading model from %s\n", fpath);
 }
 
 void save_lua(char *fpath, OFF *off)
 {
-    
+    printf("Saving model to %s\n", fpath);
 }
 
 void vali_arg(ARG *arg, int *stat)
@@ -75,14 +75,14 @@ void vali_arg(ARG *arg, int *stat)
 
 void copy_arg(char**argv, char *ptr)
 {
-    argv++;
-
     if (*argv != NULL)
         strcpy(ptr, *argv);
 }
 
 void load_arg(int argc, char **argv, ARG *arg)
 {
+    argv++;
     copy_arg(argv, arg->ifpath);
+    argv++;
     copy_arg(argv, arg->ofpath);
 }
