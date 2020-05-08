@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#define TITLE       "off2lua v1.0.0\n"
+#define TITLE       "\toff2lua v1.0.0\n"
+#define UNDERLINE    "===============================\n"
+
 #define ERROR       -999
+
 #define PATH_SIZE   500
 #define OFF_LIMIT   1000
+#define OFF_LINE_SIZE 100
 
 struct t_arg{
     char ifpath[PATH_SIZE];
@@ -19,8 +23,8 @@ typedef struct t_arg ARG;
 typedef struct t_off OFF;
 
 void show_hlp();
-void load_off(char *fpath, OFF *off);
-void save_lua(char *fpath, OFF *off);
+void load_off(char *fpath, OFF *off, int *stat);
+void save_lua(char *fpath, OFF *off, int *stat);
 void copy_arg(char**argv, char *ptr);
 void load_arg(int argc, char **argv, ARG *arg);
 void vali_arg(ARG *arg, int *stat);
@@ -31,8 +35,10 @@ int main(int argc, char**argv)
     OFF off;
     int stat;
 
+    printf(UNDERLINE);
     printf(TITLE);
-    
+    printf(UNDERLINE);
+
     load_arg(argc, argv, &arg);
     vali_arg(&arg, &stat);
 
@@ -42,8 +48,12 @@ int main(int argc, char**argv)
         return 0;
     }
 
-    load_off(arg.ifpath, &off);
-    save_lua(arg.ofpath, &off);
+    load_off(arg.ifpath, &off, &stat);
+
+    if (stat == ERROR)
+        return 0;
+
+    save_lua(arg.ofpath, &off, &stat);
 
     return 0;
 }
@@ -54,12 +64,33 @@ void show_hlp()
     printf("\toff2lua <input file> <ouput file>\n\n");
 }
 
-void load_off(char *fpath, OFF *off)
+void load_off(char *fpath, OFF *off, int *stat)
 {
+    FILE *file;
+    char line[OFF_LINE_SIZE];
+    void *res = NULL;
+
     printf("Loading model from %s\n", fpath);
+
+    file = fopen(fpath, "r");
+
+    if (file == NULL)
+    {
+        printf("ERROR: Could not open file: %s\n", fpath);
+        *stat = ERROR;
+        return;
+    }
+
+    do
+    {
+        res = fgets(line, OFF_LINE_SIZE, file);
+        printf("%s\n", line);
+    } while(res != NULL);
+
+    fclose(file);
 }
 
-void save_lua(char *fpath, OFF *off)
+void save_lua(char *fpath, OFF *off, int *stat)
 {
     printf("Saving model to %s\n", fpath);
 }
