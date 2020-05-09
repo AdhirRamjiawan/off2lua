@@ -6,4 +6,4 @@ clean:
 	rm -Rf ./build
 
 test:
-	 ./build/off2lua ~/Documents/3d\ models/teapot.off teapot.lua
+	 ./build/off2lua ~/Documents/3d\ models/teapot.off teapot.lua teapot
