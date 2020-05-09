@@ -7,8 +7,8 @@
 #define ERROR       -999
 
 #define PATH_SIZE   500
-#define OFF_LIMIT   1000
-#define OFF_LINE_SIZE 100
+#define OFF_LINE_SIZE 50
+#define OFF_FILE_SIZE 5000
 
 struct t_arg{
     char ifpath[PATH_SIZE];
@@ -16,7 +16,13 @@ struct t_arg{
 };
 
 struct t_off{
-    char lines[OFF_LIMIT][3];
+    char lines[OFF_FILE_SIZE][OFF_LINE_SIZE];
+    int lcount;
+};
+
+struct t_lua{
+    char cname[100];
+    char lines[OFF_FILE_SIZE][OFF_LINE_SIZE];
 };
 
 typedef struct t_arg ARG;
@@ -31,8 +37,8 @@ void vali_arg(ARG *arg, int *stat);
 
 int main(int argc, char**argv)
 {
-    ARG arg;
     OFF off;
+    ARG arg;
     int stat;
 
     printf(UNDERLINE);
@@ -47,9 +53,9 @@ int main(int argc, char**argv)
         show_hlp();
         return 0;
     }
-
+    
     load_off(arg.ifpath, &off, &stat);
-
+    
     if (stat == ERROR)
         return 0;
 
@@ -67,8 +73,9 @@ void show_hlp()
 void load_off(char *fpath, OFF *off, int *stat)
 {
     FILE *file;
-    char line[OFF_LINE_SIZE];
+    char line[OFF_LINE_SIZE] = "\0";
     void *res = NULL;
+    int lcount = 0;
 
     printf("Loading model from %s\n", fpath);
 
@@ -81,18 +88,43 @@ void load_off(char *fpath, OFF *off, int *stat)
         return;
     }
 
-    do
+    while(fgets(line, OFF_LINE_SIZE, file) != NULL)
     {
-        res = fgets(line, OFF_LINE_SIZE, file);
-        printf("%s\n", line);
-    } while(res != NULL);
+        //printf("%ld, %s\n", strlen(line), line);
+        char *tmp = off->lines[lcount];
+        strcpy(tmp, line);
+        lcount++;
+    }
+
+    off->lcount = lcount;
+    printf("lcount %d\n", off->lcount);
 
     fclose(file);
 }
 
 void save_lua(char *fpath, OFF *off, int *stat)
 {
-    printf("Saving model to %s\n", fpath);
+    FILE *file;
+    int lcount = off->lcount;
+    printf("Saving model to %s, %ld\n", fpath, strlen(fpath));
+
+    file = fopen(fpath, "w");
+
+    if (file == NULL)
+    {
+        *stat = ERROR;
+        return;
+    }
+
+    printf("%d\n", off->lcount);
+    
+    for (int i = 0; i < lcount; i++)
+    {
+        fprintf(file, "%s", off->lines[i]);
+        //printf("%s\n", &off->lines[i]);
+    }
+
+    fclose(file);
 }
 
 void vali_arg(ARG *arg, int *stat)
