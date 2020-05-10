@@ -4,6 +4,7 @@ command line utility to convert off 3d model files to lua code files to be used 
 # build
 
 make all
+
 make install
 
 # run
