@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define TITLE       "\toff2lua v1.0.0\n"
 #define UNDERLINE    "===============================\n"
 
 #define ERROR       -999
 
+#define SPACE ' '
 #define CLASS_NAME 100
 #define PATH_SIZE   500
 #define OFF_LINE_SIZE 50
@@ -33,6 +35,8 @@ typedef struct t_off OFF;
 typedef struct t_lua LUA;
 
 void show_hlp();
+void trim_wsp(char *text);
+void repl_chr(char *text, char find, char repl);
 void load_off(char *fpath, OFF *off, int *stat);
 void save_lua(char *fpath, LUA *lua, int *stat);
 void off2_lua(OFF *off, LUA *lua, ARG *arg);
@@ -112,18 +116,33 @@ void load_off(char *fpath, OFF *off, int *stat)
 void off2_lua(OFF *off, LUA *lua, ARG *arg)
 {
     int lcount = off->lcount;
-    char *tok;
 
     for (int l = 0; l < lcount; l++)
     {
-        tok = strtok(off->lines[l], " ");
+        if (strstr(off->lines[l], "OFF") != NULL)
+            continue;
+
+        char *tok = strtok(off->lines[l], " ");
+        char *tmp = (char *)malloc(sizeof(char) * OFF_LINE_SIZE);
+        int count = 0;
+
+        memset(tmp, '\0', sizeof(char) * OFF_LINE_SIZE);
 
         while (tok != NULL)    
         {
-            sprintf(lua->lines[l], ",%s", tok);
+            if (count > 0)
+                strcat(tmp, ",");
+
+            strcat(tmp, tok);
             tok = strtok(NULL, " ");
+            count++;
         }
-        sprintf(lua->lines[l], "\n");
+
+        if (l == 1)
+            sprintf(lua->lines[l], "%s", tmp);
+        else
+            sprintf(lua->lines[l], ",%s", tmp);
+
     }
 
     lua->lcount = lcount;
@@ -155,7 +174,7 @@ void save_lua(char *fpath, LUA *lua, int *stat)
 
     for (int i = 0; i < lcount; i++)
     {
-        fprintf(file, ",%s", lua->lines[i]);
+        fprintf(file, "%s", lua->lines[i]);
         //printf("%s\n", &off->lines[i]);
     }
 
